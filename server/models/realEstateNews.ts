@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { NewsType } from "../utils/enums";
 
 const realEstateNewsSchema = new mongoose.Schema(
     {
@@ -12,6 +13,14 @@ const realEstateNewsSchema = new mongoose.Schema(
             type: String,
         },
         imageThumb: String,
+        slug: {
+            type: String,
+            unique: true,
+        },
+        type: {
+            type: Number,
+            default: NewsType.Create // 
+        },
     },
     {
         timestamps: true,

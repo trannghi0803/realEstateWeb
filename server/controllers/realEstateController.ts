@@ -1,52 +1,16 @@
 import { HttpStatus } from "../utils/enums";
 import realEstateModel from "../models/realEstate"
 import { IReqAuth } from "../config/interface";
-import categoryModel from "../models/realEstateCategory"
+import { Request, Response } from 'express'
+const mongoose = require('mongoose');
 
-// class APIfeatures {
-//   constructor(query: any, queryString: any) {
-//     this.query = query;
-//     this.queryString = queryString;
-//   }
+const Pagination = (req: IReqAuth) => {
+  let page = Number(req.query.page) * 1 || 1;
+  let pageSize = Number(req.query.limit) * 1 || 4;
+  let skip = (page - 1) * pageSize;
 
-//   filtering() {
-//     const queryOjb = { ...this.queryString }; //queryString = req.query
-//     // console.log({ before: queryOjb }); //before delete page
-
-//     const excludedFields = ["page", "sort", "limit"];
-//     excludedFields.forEach((el) => delete queryOjb[el]);
-
-//     // console.log({ after: queryOjb }); //after delete page
-
-//     let queryStr = JSON.stringify(queryOjb);
-//     queryStr = queryStr.replace(
-//       /\b(gte|gt|lt|lte|regex)\b/g,
-//       (match) => "$" + match
-//     );
-//     // console.log({ queryStr });
-
-//     this.query.find(JSON.parse(queryStr));
-//     return this;
-//   }
-
-//   sorting() {
-//     if (this.queryString.sort) {
-//       const sortBy = this.queryString.sort.split(",").join(" ");
-//       this.query = this.query.sort(sortBy);
-//     } else {
-//       this.query = this.query.sort("-createdAt");
-//     }
-//     return this;
-//   }
-
-//   paginating() {
-//     const page = this.queryString.page * 1 || 1;
-//     const limit = this.queryString.limit * 1 || 12;
-//     const skip = (page - 1) * limit;
-//     this.query = this.query.skip(skip).limit(limit);
-//     return this;
-//   }
-// }
+  return { page, pageSize, skip };
+}
 
 const realEstateController = {
   getRealEstate: async (req: any, res: any) => {
@@ -55,6 +19,170 @@ const realEstateController = {
       res.json(realEstate);
     } catch (err: any) {
       return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
+    }
+  },
+  // getRealEstateSearch: async (req: Request, res: Response) => {
+  //   try {
+  //     // var params = req.params.search;
+  //     const realEstate = await realEstateModel.find({
+  //       title: `/^${req.query.title}/`
+  //     }).sort("-createdAt");
+  //     res.json(realEstate);
+  //   } catch (err: any) {
+  //     return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
+  //   }
+  // },
+  getRealEstateSearch: async (req: Request, res: Response) => {
+    const { pageSize, skip } = Pagination(req)
+    console.log("data", req.params)
+
+    try {
+      const Data = await realEstateModel.aggregate([
+        {
+          $search: {
+            index: "searchText",
+            autocomplete: {
+              "query": `${req.query.title}`,
+              "path": "title"
+            }
+          }
+        },
+        { $sort: { createdAt: -1 } },
+        { $limit: 10 },
+        {
+          $project: {
+            title: 1,
+            description: 1,
+            thumbnail: 1,
+            createdAt: 1
+          }
+        }
+      ])
+
+      const data = Data[0].totalData;
+      const totalCount = Data[0].count;
+      console.log("datass", Data)
+      // Pagination
+      let totalPage = 0;
+
+      if (totalCount % pageSize === 0) {
+        totalPage = totalCount / pageSize;
+      } else {
+        totalPage = Math.floor(totalCount / pageSize) + 1;
+      }
+
+      res.json({ data, totalPage, totalCount })
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message })
+    }
+  },
+  getRealEstateHighLight: async (req: Request, res: Response) => {
+    const { pageSize, skip } = Pagination(req)
+    console.log("data", req.params)
+
+    try {
+      const Data = await realEstateModel.aggregate([
+        {
+          $facet: {
+            totalData: [
+              {
+                $match: {
+                  isHighLight: Number(req.params.isHighLight)
+                }
+              },
+              // Sorting
+              { $sort: { createdAt: -1 } },
+              { $skip: skip },
+              { $limit: pageSize }
+            ],
+            totalCount: [
+              {
+                $match: {
+                  isHighLight: Number(req.params.isHighLight)
+                },
+              },
+              { $count: 'count' }
+            ]
+          }
+        },
+        {
+          $project: {
+            count: { $arrayElemAt: ["$totalCount.count", 0] },
+            totalData: 1
+          }
+        }
+      ])
+
+      const data = Data[0].totalData;
+      const totalCount = Data[0].count;
+      console.log("datass", Data)
+      // Pagination
+      let totalPage = 0;
+
+      if (totalCount % pageSize === 0) {
+        totalPage = totalCount / pageSize;
+      } else {
+        totalPage = Math.floor(totalCount / pageSize) + 1;
+      }
+
+      res.json({ data, totalPage, totalCount })
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message })
+    }
+  },
+  getRealEstateByCategory: async (req: Request, res: Response) => {
+    const { pageSize, skip } = Pagination(req)
+
+    try {
+      const Data = await realEstateModel.aggregate([
+        {
+          $facet: {
+            totalData: [
+              {
+                $match: {
+                  category: mongoose.Types.ObjectId(req.params.categoryId),
+                  // isHighLight: req.params.isHighLight
+                }
+              },
+              // Sorting
+              { $sort: { createdAt: -1 } },
+              { $skip: skip },
+              { $limit: pageSize }
+            ],
+            totalCount: [
+              {
+                $match: {
+                  category: mongoose.Types.ObjectId(req.params.categoryId),
+                  // isHighLight: req.params.isHighLight
+                },
+              },
+              { $count: 'count' }
+            ]
+          }
+        },
+        {
+          $project: {
+            count: { $arrayElemAt: ["$totalCount.count", 0] },
+            totalData: 1
+          }
+        }
+      ])
+
+      const data = Data[0].totalData;
+      const totalCount = Data[0].count;
+      console.log("data", Data)
+      // Pagination
+      let totalPage = 0;
+
+      if (totalCount % pageSize === 0) {
+        totalPage = totalCount / pageSize;
+      } else {
+        totalPage = Math.floor(totalCount / pageSize) + 1;
+      }
+
+      res.json({ data, totalPage, totalCount })
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message })
     }
   },
   getDetail: async (req: any, res: any) => {
@@ -77,7 +205,7 @@ const realEstateController = {
       //chỉ admin mới có quyên thê sửa xóa
       const { title, price, area, description, status, attributes, images, category, address, type, isHighLight } = req.body;
       console.log("object", req.body);
-      const newRealEstate = new realEstateModel({ 
+      const newRealEstate = new realEstateModel({
         user: req.user._id,
         title, price, area, description, status, attributes, images, category, address, type, isHighLight
       });
@@ -92,7 +220,7 @@ const realEstateController = {
   deleteRealEstate: async (req: IReqAuth, res: any) => {
     try {
       await realEstateModel.findByIdAndDelete(req.params.id);
-      res.json({ msg: "Xóa thành công loại tin đăng", statusCode: HttpStatus.SUCCESS});
+      res.json({ msg: "Xóa thành công loại tin đăng", statusCode: HttpStatus.SUCCESS });
     } catch (err: any) {
       return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
     }
@@ -101,13 +229,13 @@ const realEstateController = {
     try {
       const { title, price, area, description, status, attributes, images, category, address, type, isHighLight } = req.body;
       console.log("object", req.body);
-      
-        await realEstateModel.findOneAndUpdate(
-          { _id: req.params.id },
-          { title, price, area, description, status, attributes, images, category, address, type, isHighLight }
-        );
-        res.json({ msg: "Cập nhật thành công loại tin đăng", statusCode: HttpStatus.SUCCESS});
-      
+
+      await realEstateModel.findOneAndUpdate(
+        { _id: req.params.id },
+        { title, price, area, description, status, attributes, images, category, address, type, isHighLight }
+      );
+      res.json({ msg: "Cập nhật thành công loại tin đăng", statusCode: HttpStatus.SUCCESS });
+
     } catch (err: any) {
       return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
     }

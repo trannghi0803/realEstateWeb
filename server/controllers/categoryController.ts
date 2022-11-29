@@ -26,6 +26,7 @@ const categoryController = {
       //chỉ admin mới có quyên thê sửa xóa
       const { name, type, description } = req.body;
       const category = await categoryModel.findOne({ name });
+      console.log("category", category)
       if (category)
         return res.status(400).json({ msg: "Loại tin đăng đã tồn tại", statusCode: HttpStatus.VALIDATION });
       const newCategory = new categoryModel({ name, type, description });

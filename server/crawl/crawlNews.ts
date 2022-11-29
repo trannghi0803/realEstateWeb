@@ -1,4 +1,4 @@
-import { CategoryType, RealEstateType } from "../utils/enums";
+import { CategoryType, NewsType, RealEstateType } from "../utils/enums";
 import realEstateNewModel from "../models/realEstateNews"
 
 const puppeteer = require("puppeteer");
@@ -20,27 +20,26 @@ const crawlNews = {
         await page.goto(originalUrl, { waitUntil: "networkidle2" });
 
         let data = await page.evaluate(() => {
-            let news: string[] = [];
-            let news_wrapper = document.querySelectorAll(
-                ".re__news-item > div"
-                );
-                
-                news_wrapper.forEach((product) => {
-                    // let dataJson = {};
-                    let obj: any = {}
-                    try {
-                    const uri = product.querySelector("a")?.href;
-                        const imageThumb: any = product.querySelector("img");
-                    obj.uri = uri;
-                    obj.imageThumb = imageThumb?.src;
-                    obj && news.push(obj);
+            let news: any[] = [];
+            let news_wrapper = document.querySelectorAll(".re__news-item > div");
+
+            news_wrapper.forEach((product: any) => {
+                // let dataJson = {};
+                // let obj: any = {}
+                try {
+                    const uri: any = product.querySelector("a")?.href;
+                    const imageThumb: any = product.querySelector("img")?.src;
+                    news.push({
+                        uri,
+                        imageThumb: imageThumb,
+                    });
                 } catch (err) {
                     console.log(err);
                 }
             });
             return news;
         });
-        // console.log("data", data);
+        console.log("data", data);
 
         await browser.close();
         return data;
@@ -48,23 +47,26 @@ const crawlNews = {
 
     saveDataToDB: async (url: any[]) => {
         for (let i = 0; i < url.length;) {
-            const item = await getNewsDetail(url[i].uri);
-            //Lưu vào database
-            
-            if (item !== undefined) {
-
-                //save category to DB
-                let newsData = {
-                    title: item.title,
-                    abstract: item.abstract,
-                    content: item.content,
-                    imageThumb: url[i]?.imageThumb
+            const existUriDB = await realEstateNewModel.findOne({ slug: url[i].uri });
+            if (!existUriDB) {
+                const item = await getNewsDetail(url[i].uri);
+                //Lưu vào database
+    
+                if (item !== undefined) {
+                    //save category to DB
+                    let newsData = {
+                        title: item.title,
+                        abstract: item.abstract,
+                        content: item.content,
+                        imageThumb: url[i]?.imageThumb,
+                        slug: url[i].uri || "",
+                        type: NewsType.Crawl
+                    }
+    
+                    const newNews = new realEstateNewModel(newsData);
+                    await newNews.save();
                 }
-
-                const newNews= new realEstateNewModel(newsData);
-                await newNews.save();
             }
-
             i++;
         }
     },

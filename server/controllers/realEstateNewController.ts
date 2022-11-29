@@ -1,4 +1,4 @@
-import { HttpStatus } from "../utils/enums";
+import { HttpStatus, NewsType } from "../utils/enums";
 import realEstateNewModel from "../models/realEstateNews"
 import { IReqAuth } from "../config/interface";
 
@@ -32,7 +32,7 @@ const realEstateNewController = {
       const { title, abstract, content, imageThumb } = req.body;
       // console.log("object", req.body);
       const realEstateNew = new realEstateNewModel({ 
-        title, abstract, content, imageThumb
+        title, abstract, content, imageThumb, type: NewsType.Create
       });
 
       await realEstateNew.save();
@@ -57,7 +57,7 @@ const realEstateNewController = {
       
         await realEstateNewModel.findOneAndUpdate(
           { _id: req.params.id },
-          { title, abstract, content, imageThumb }
+          { title, abstract, content, imageThumb, type: NewsType.Create }
         );
         res.json({ msg: "Cập nhật thành công tin tức", statusCode: HttpStatus.SUCCESS});
       
