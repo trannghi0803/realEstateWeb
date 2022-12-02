@@ -6,8 +6,8 @@ const userSchema = new mongoose.Schema(
         userName: {
             type: String,
             required: [true, "Please add you userName"],
-            trim: true,
-            maxLength: [20, "Your name is up to 20 characters"]
+            // trim: true,
+            maxLength: [30, "Your name is up to 30 characters"]
         },
         email: {
             type: String,
@@ -37,6 +37,10 @@ const userSchema = new mongoose.Schema(
         type: {
             type: String,
             default: 'normal' // fast
+        }, 
+        status: {
+            type: Number,
+            default: 1 //
         }
     },
     {

@@ -1,5 +1,5 @@
 import categoryController from "../controllers/categoryController";
-import { CategoryType, RealEstateType } from "../utils/enums";
+import { CategoryType, IsHighLight, RealEstateType } from "../utils/enums";
 import categoryModel from "../models/realEstateCategory"
 import realEstateModel from "../models/realEstate"
 
@@ -19,7 +19,7 @@ const crawlRealEstate = {
             ignoreHTTPSErrors: true,
         });
         const page = await browser.newPage();
-        await page.goto(originalUrl, { waitUntil: "networkidle2" });
+        await page.goto(originalUrl, { waitUntil: "networkidle2", timeout: 0 });
 
         let data = await page.evaluate(() => {
             let products: any[] = [];
@@ -35,6 +35,7 @@ const crawlRealEstate = {
                     console.log(err);
                 }
             });
+
             return products;
         });
         // console.log("data", data);
@@ -51,45 +52,55 @@ const crawlRealEstate = {
 
     saveDataToDB: async (Url: string[]) => {
         for (let i = 0; i < Url.length;) {
-            const item = await pageDetail(Url[i]);
-            //Lưu vào database
-            //LoaiTinDang
-            if (item !== undefined) {
+            const existUri = await realEstateModel.findOne({ slug: Url[i] });
+            if (!existUri) {
+                const item = await pageDetail(Url[i]);
+                //Lưu vào database
+                //LoaiTinDang
+                if (item !== undefined) {
 
-                //save category to DB
-                let categoryData = {
-                    name: item.category,
-                    type: CategoryType.Sell,
-                    description: item.category,
+                    //save category to DB
+                    let categoryResult: any;
+                    const category = await categoryModel.findOne({ name: item.category });
+                    if (category) {
+                        categoryResult = category;
+                    } else {
+                        let categoryData = {
+                            name: item.category || "",
+                            type: CategoryType.Sell,
+                            description: item.category,
+                        }
+
+                        const newCategory = new categoryModel(categoryData);
+                        categoryResult = await newCategory.save();
+                    }
+
+                    //save realEstate
+                    let realEstateData = {
+                        user: "637a80dde9d7f152fba5b5d4",
+                        title: item.title,
+                        price: item.price,
+                        area: item.area,
+                        description: item.description,
+                        status: 1,
+                        attributes: item.attributes,
+                        images: item.images,
+                        category: categoryResult._id,
+                        categoryType: CategoryType.Sell,
+                        address: {
+                            provinceName: item.provinceName,
+                            districtName: item.districtName,
+                            wardName: item.wardName,
+                            addressLine: item.addressLine
+                        },
+                        type: RealEstateType.Crawl,
+                        isHighLight: IsHighLight.false,
+                        slug: Url[i] || ""
+                    }
+                    const newRealEstate = new realEstateModel(realEstateData);
+                    await newRealEstate.save();
                 }
-
-                const newCategory = new categoryModel(categoryData);
-                let categoryResult = await newCategory.save();
-
-                //save realEstate
-                let realEstateData = {
-                    user: "637a80dde9d7f152fba5b5d4",
-                    title: item.title, 
-                    price: item.price, 
-                    area: item.area, 
-                    description: item.description, 
-                    status: 1, 
-                    attributes: item.attributes, 
-                    images: item.images, 
-                    category: categoryResult._id, 
-                    address: {
-                        provinceName: item.provinceName,
-                        districtName: item.districtName,
-                        wardName: item.wardName,
-                        addressLine: item.addressLine
-                    }, 
-                    type: RealEstateType.Crawl,
-                    isHighLight: false,
-                }
-                const newRealEstate = new realEstateModel(realEstateData);
-                await newRealEstate.save();
             }
-
             i++;
         }
     },
@@ -104,7 +115,7 @@ const pageDetail = async (Url: string) => {
         ignoreHTTPSErrors: true,
     });
     const page = await browser.newPage();
-    await page.goto(Url, { waitUntil: "networkidle2" });
+    await page.goto(Url, { waitUntil: "networkidle2", timeout: 0 });
 
     let data = await page.evaluate(() => {
         // try {
@@ -146,23 +157,36 @@ const pageDetail = async (Url: string) => {
         //Get giá
         let price: any = document.querySelector(".re__pr-short-info div:nth-child(1) span:nth-child(2)")?.innerHTML
         if (price) {
-            dataJson.price = price || "";
+            const result = price.split(" ");
+            let priceResult: number = 0
+            let priceNumber = result[result.length - 2]
+            let priceRefix = result[result.length - 1]
+            switch (priceRefix) {
+                case 'tỷ':
+                    priceResult = Number(priceNumber || 0) * 1000000000
+                    break;
+                case 'triệu':
+                    priceResult = Number(priceNumber || 0) * 1000000
+                    break;
+                default: priceResult = 0
+                    break;
+            }
+            dataJson.price = priceResult || 0;
         }
 
         //Get diện tích
         let area: any = document.querySelector(".re__pr-short-info div:nth-child(2) span:nth-child(2)")?.innerHTML
         if (area) {
             const areaData = area || "";
-            //Chuyển diện tích từ kiểu chuỗi trên web sang number lưu vào csdl
             let areaTemp = areaData.split(" ", 1) || 0;
-            dataJson.area = areaTemp[areaTemp.length - 1];
+            dataJson.area = Number(areaTemp[areaTemp.length - 1]) || 0;
         }
 
         //Get loại tin đăng
         let category: any = document.querySelector(".re__pr-specs-product-type")?.innerHTML
         if (category) {
             let data = category || "";
-            const result = data.split(":");
+            const result = data.split(": ");
             dataJson.category = result[result.length - 1] || "";
         }
 

@@ -1,6 +1,14 @@
-import { HttpStatus } from "../utils/enums";
+import { HttpStatus, NewsType } from "../utils/enums";
 import realEstateNewModel from "../models/realEstateNews"
 import { IReqAuth } from "../config/interface";
+
+const Pagination = (req: IReqAuth) => {
+  let page = Number(req.query.pageNumber) * 1 || 1;
+  let pageSize = Number(req.query.pageSize) * 1 || 10;
+  let skip = (page - 1) * pageSize;
+
+  return { page, pageSize, skip };
+}
 
 const realEstateNewController = {
   getRealEstateNew: async (req: any, res: any) => {
@@ -11,6 +19,35 @@ const realEstateNewController = {
       return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
     }
   },
+
+  getPagedRealEstateNew: async (req: any, res: any, next: any) => {
+    try {
+      const { page, pageSize, skip } = Pagination(req)
+
+      let query = {
+        title: {
+          $regex: new RegExp(req.query.title), $options: "i"
+        },
+      }
+      const countResult = await realEstateNewModel.find(query).count()
+      const realEstateNew = await realEstateNewModel.find(query).sort("-createdAt")
+        .skip((pageSize * page) - pageSize)
+        .limit(pageSize)
+        .exec((err, result) => {
+          realEstateNewModel.countDocuments((err, count) => {
+            if (err) return next(err)
+            console.log("realEstateNewModel query", query);
+            res.json({
+              result, pageNumber: page, totalPage: Math.ceil((countResult) / pageSize), totalCount: (countResult), pageSize
+            });
+          })
+        })
+      // res.json(realEstateNew);
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
+    }
+  },
+
   getDetail: async (req: any, res: any) => {
     try {
       const realEstateNew = await realEstateNewModel.findById(req.params.id);
@@ -32,7 +69,7 @@ const realEstateNewController = {
       const { title, abstract, content, imageThumb } = req.body;
       // console.log("object", req.body);
       const realEstateNew = new realEstateNewModel({ 
-        title, abstract, content, imageThumb
+        title, abstract, content, imageThumb, type: NewsType.Create
       });
 
       await realEstateNew.save();
@@ -57,7 +94,7 @@ const realEstateNewController = {
       
         await realEstateNewModel.findOneAndUpdate(
           { _id: req.params.id },
-          { title, abstract, content, imageThumb }
+          { title, abstract, content, imageThumb, type: NewsType.Create }
         );
         res.json({ msg: "Cập nhật thành công tin tức", statusCode: HttpStatus.SUCCESS});
       

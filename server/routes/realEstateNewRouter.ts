@@ -7,6 +7,9 @@ import realEstateNewController from '../controllers/realEstateNewController';
 const router = express.Router()
 
 router
+    .route("/news/getPaged")
+    .get(realEstateNewController.getPagedRealEstateNew)
+router
     .route("/news")
     .get(realEstateNewController.getRealEstateNew)
     .post(auth, authAdmin, realEstateNewController.createRealEstateNew);

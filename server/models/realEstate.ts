@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { RealEstateType } from '../utils/enums';
+import { IsHighLight, RealEstateType } from '../utils/enums';
 
 const realEstateSchema = new mongoose.Schema(
     {
@@ -17,8 +17,8 @@ const realEstateSchema = new mongoose.Schema(
             wardCode: String,
             addressLine: String
         },
-        price: String,
-        area: String,
+        price: Number,
+        area: Number, //m2
         description: String,
         status: {
             type: Number,
@@ -27,14 +27,19 @@ const realEstateSchema = new mongoose.Schema(
         attributes: String,
         images: [],
         category: { type: mongoose.Types.ObjectId, ref: 'category' },
+        categoryType: Number,
         type: {
             type: Number,
             default: RealEstateType.Create // 
         },
         isHighLight: {
-            type: Boolean,
-            default: false,
+            type: Number,
+            default: IsHighLight.false // 
         },
+        slug: {
+            type: String,
+            // unique: true
+        }
     },
     {
         timestamps: true,

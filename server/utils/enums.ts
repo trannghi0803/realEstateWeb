@@ -23,8 +23,22 @@ export enum RealEstateType {
     Create = 1,
     Crawl = 2
 }
-
+export enum NewsType {
+    Create = 1,
+    Crawl = 2
+}
 export enum CategoryType {
     Sell = 0,
     Rent = 1
+}
+
+export enum IsHighLight {
+    false = 0,
+    True = 1
+}
+
+export enum RealEstateStatus {
+    Reject = -2,
+    Active = 1,
+    Inactive = 0
 }

@@ -8,7 +8,7 @@ const categorySchema = new mongoose.Schema(
         },
         name: {
             type: String,
-            required: [true, "Please add Caterogy Name"],
+            // required: [true, "Please add Caterogy Name"],
         },
         description: {
             type: String,
