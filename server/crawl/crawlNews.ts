@@ -17,7 +17,7 @@ const crawlNews = {
             ignoreHTTPSErrors: true,
         });
         const page = await browser.newPage();
-        await page.goto(originalUrl, { waitUntil: "networkidle2" });
+        await page.goto(originalUrl, { waitUntil: "networkidle2", timeout: 0 });
 
         let data = await page.evaluate(() => {
             let news: any[] = [];
@@ -82,7 +82,7 @@ const getNewsDetail = async (url: string) => {
         ignoreHTTPSErrors: true,
     });
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: "networkidle2" });
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 0 });
 
     let data = await page.evaluate(() => {
         try {

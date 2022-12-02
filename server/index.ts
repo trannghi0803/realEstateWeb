@@ -46,9 +46,7 @@ const crawlNewsData = async () => {
   try {
     let data: any;
     let url = crawlNews.getLink(NEWS_URL);
-    console.log("url", url)
     url.then((uri) => {
-      console.log("Uri", uri)
       data = crawlNews.saveDataToDB(uri)
     })
     return data
@@ -61,12 +59,12 @@ const crawlNewsData = async () => {
 // crawlRealEstateSell()
 
 // Schedule a job to run every two minutes
-const jobCrawlRealEstateSell = nodeCron.schedule('12 4 * * *', crawlRealEstateSell, {
+const jobCrawlRealEstateSell = nodeCron.schedule('18 5 * * *', crawlRealEstateSell, {
   scheduled: false,
   timezone: "Asia/Ho_Chi_Minh"
 });
 
-const jobCrawlNewsData = nodeCron.schedule('30 2 * * *', crawlNewsData, {
+const jobCrawlNewsData = nodeCron.schedule('31 4 * * *', crawlNewsData, {
   scheduled: false,
   timezone: "Asia/Ho_Chi_Minh"
 });

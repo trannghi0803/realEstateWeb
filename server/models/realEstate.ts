@@ -17,7 +17,7 @@ const realEstateSchema = new mongoose.Schema(
             wardCode: String,
             addressLine: String
         },
-        price: String,
+        price: Number,
         area: Number, //m2
         description: String,
         status: {
@@ -27,6 +27,7 @@ const realEstateSchema = new mongoose.Schema(
         attributes: String,
         images: [],
         category: { type: mongoose.Types.ObjectId, ref: 'category' },
+        categoryType: Number,
         type: {
             type: Number,
             default: RealEstateType.Create // 
@@ -37,7 +38,7 @@ const realEstateSchema = new mongoose.Schema(
         },
         slug: {
             type: String,
-            unique: true,
+            // unique: true
         }
     },
     {

@@ -36,3 +36,9 @@ export enum IsHighLight {
     false = 0,
     True = 1
 }
+
+export enum RealEstateStatus {
+    Reject = -2,
+    Active = 1,
+    Inactive = 0
+}

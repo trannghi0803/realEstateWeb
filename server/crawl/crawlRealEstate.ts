@@ -19,7 +19,7 @@ const crawlRealEstate = {
             ignoreHTTPSErrors: true,
         });
         const page = await browser.newPage();
-        await page.goto(originalUrl, { waitUntil: "networkidle2" });
+        await page.goto(originalUrl, { waitUntil: "networkidle2", timeout: 0 });
 
         let data = await page.evaluate(() => {
             let products: any[] = [];
@@ -66,7 +66,7 @@ const crawlRealEstate = {
                         categoryResult = category;
                     } else {
                         let categoryData = {
-                            name: item.category,
+                            name: item.category || "",
                             type: CategoryType.Sell,
                             description: item.category,
                         }
@@ -86,6 +86,7 @@ const crawlRealEstate = {
                         attributes: item.attributes,
                         images: item.images,
                         category: categoryResult._id,
+                        categoryType: CategoryType.Sell,
                         address: {
                             provinceName: item.provinceName,
                             districtName: item.districtName,
@@ -99,7 +100,7 @@ const crawlRealEstate = {
                     const newRealEstate = new realEstateModel(realEstateData);
                     await newRealEstate.save();
                 }
-            } 
+            }
             i++;
         }
     },
@@ -114,7 +115,7 @@ const pageDetail = async (Url: string) => {
         ignoreHTTPSErrors: true,
     });
     const page = await browser.newPage();
-    await page.goto(Url, { waitUntil: "networkidle2" });
+    await page.goto(Url, { waitUntil: "networkidle2", timeout: 0 });
 
     let data = await page.evaluate(() => {
         // try {
@@ -156,7 +157,21 @@ const pageDetail = async (Url: string) => {
         //Get giá
         let price: any = document.querySelector(".re__pr-short-info div:nth-child(1) span:nth-child(2)")?.innerHTML
         if (price) {
-            dataJson.price = price || "";
+            const result = price.split(" ");
+            let priceResult: number = 0
+            let priceNumber = result[result.length - 2]
+            let priceRefix = result[result.length - 1]
+            switch (priceRefix) {
+                case 'tỷ':
+                    priceResult = Number(priceNumber || 0) * 1000000000
+                    break;
+                case 'triệu':
+                    priceResult = Number(priceNumber || 0) * 1000000
+                    break;
+                default: priceResult = 0
+                    break;
+            }
+            dataJson.price = priceResult || 0;
         }
 
         //Get diện tích
