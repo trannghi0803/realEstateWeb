@@ -7,6 +7,10 @@ import authAdmin from '../middleware/authAdmin';
 const router = express.Router()
 
 router
+    .route("/category/getPaged")
+    .get(auth, authAdmin, categoryController.getPaged)
+
+router
     .route("/category")
     .get(categoryController.getCategory)
     .post(auth, authAdmin, categoryController.createCategory);

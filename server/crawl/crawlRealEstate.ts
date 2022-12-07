@@ -95,7 +95,8 @@ const crawlRealEstate = {
                         },
                         type: RealEstateType.Crawl,
                         isHighLight: IsHighLight.false,
-                        slug: Url[i] || ""
+                        slug: Url[i] || "",
+                        // createAt: new Date(1667602110*1000)
                     }
                     const newRealEstate = new realEstateModel(realEstateData);
                     await newRealEstate.save();

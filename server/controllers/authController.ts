@@ -13,6 +13,14 @@ import { constants } from 'buffer'
 require('dotenv').config()
 
 
+const Pagination = (req: IReqAuth) => {
+  let page = Number(req.query.pageNumber) * 1 || 1;
+  let pageSize = Number(req.query.pageSize) * 1 || 10;
+  let skip = (page - 1) * pageSize;
+
+  return { page, pageSize, skip };
+}
+
 const CLIENT_URL = "http://localhost:3000"
 // const CLIENT_URL = `${process.env.BASE_URL}`
 
@@ -136,12 +144,31 @@ const authCtrl = {
       return res.status(500).json({ msg: err.message });
     }
   },
-  getAllUser: async (req: IReqAuth, res: Response) => {
+  getAllUser: async (req: any, res: Response, next: any) => {
     try {
+      const { page, pageSize, skip } = Pagination(req)
+      let query = {
+        userName: {
+          $regex: new RegExp(req.query.userName), $options: "i"
+        },
+      }
+      const countResult = await Users.find(query).count()
+      const data = await Users.find(query).sort("-createdAt").select("-password")
+        .skip((pageSize * page) - pageSize)
+        .limit(pageSize)
+        .exec((err, result) => {
+          Users.countDocuments((err, count) => {
+            if (err) return next(err)
+            res.json({
+              result, pageNumber: page, totalPage: Math.ceil((countResult) / pageSize), 
+              totalCount: (countResult), pageSize, statusCode: HttpStatus.SUCCESS
+            });
+          })
+        })
       //tìm user theo id không hiển thị password gán vào biến user
-      const user = await Users.find().sort("-createdAt").select("-password");
+      // const user = await Users.find().sort("-createdAt").select("-password");
 
-      res.json({ user, statusCode: HttpStatus.SUCCESS });
+      // res.json({ user, statusCode: HttpStatus.SUCCESS });
     } catch (err: any) {
       return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR, });
     }

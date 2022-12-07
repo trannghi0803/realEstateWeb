@@ -3,11 +3,46 @@ import categoryModel from "../models/realEstateCategory"
 import realEstateModel from "../models/realEstate"
 import { IReqAuth } from "../config/interface";
 
+const Pagination = (req: IReqAuth) => {
+  let page = Number(req.query.pageNumber) * 1 || 1;
+  let pageSize = Number(req.query.pageSize) * 1 || 10;
+  let skip = (page - 1) * pageSize;
+
+  return { page, pageSize, skip };
+}
+
+
 const categoryController = {
   getCategory: async (req: any, res: any) => {
     try {
       const category = await categoryModel.find().sort("-createdAt");
       res.json(category);
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
+    }
+  },
+  getPaged: async (req: any, res: any, next: any) => {
+    try {
+      const { page, pageSize, skip } = Pagination(req)
+
+      let query = {
+        name: {
+          $regex: new RegExp(req.query.name), $options: "i"
+        },
+      }
+      const countResult = await categoryModel.find(query).count()
+      const data = await categoryModel.find(query).sort("-createdAt")
+        .skip((pageSize * page) - pageSize)
+        .limit(pageSize)
+        .exec((err, result) => {
+          categoryModel.countDocuments((err, count) => {
+            if (err) return next(err)
+            res.json({
+              result, pageNumber: page, totalPage: Math.ceil((countResult) / pageSize), totalCount: (countResult), pageSize
+            });
+          })
+        })
+      // res.json(realEstateNew);
     } catch (err: any) {
       return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
     }

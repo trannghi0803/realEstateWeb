@@ -59,12 +59,12 @@ const crawlNewsData = async () => {
 // crawlRealEstateSell()
 
 // Schedule a job to run every two minutes
-const jobCrawlRealEstateSell = nodeCron.schedule('18 5 * * *', crawlRealEstateSell, {
+const jobCrawlRealEstateSell = nodeCron.schedule('42 2 * * *', crawlRealEstateSell, {
   scheduled: false,
   timezone: "Asia/Ho_Chi_Minh"
 });
 
-const jobCrawlNewsData = nodeCron.schedule('31 4 * * *', crawlNewsData, {
+const jobCrawlNewsData = nodeCron.schedule('38 4 * * *', crawlNewsData, {
   scheduled: false,
   timezone: "Asia/Ho_Chi_Minh"
 });
@@ -78,6 +78,7 @@ app.use('/api', routes.realEstateRouter);
 app.use("/api/file/", routes.upload);
 app.use("/api/address/", routes.province);
 app.use("/api", routes.realEstateNewRouter);
+app.use("/api", routes.statisticRouter);
 //Database
 // import './config/database'
 const connectDB = async () => {
