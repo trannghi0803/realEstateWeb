@@ -4,6 +4,7 @@ import province from './province';
 import realEstateNewRouter from './realEstateNewRouter';
 import realEstateRouter from './realEstateRouter';
 import statisticRouter from './statisticRouter';
+import timeExpressionRouter from './timeExpressionRouter';
 import upload from './upload';
 
 const routes = {
@@ -13,7 +14,8 @@ const routes = {
     realEstateNewRouter,
     upload,
     province,
-    statisticRouter
+    statisticRouter,
+    timeExpressionRouter
 }
 
 export default routes;

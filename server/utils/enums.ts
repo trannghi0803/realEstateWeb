@@ -42,3 +42,9 @@ export enum RealEstateStatus {
     Active = 1,
     Inactive = 0
 }
+
+export enum TimeExpressionType {
+    Sell = 1,
+    Rent = 2,
+    News= 3
+}

@@ -10,4 +10,5 @@ router.get('/statistic/countByRegion', auth, authAdmin, statisticController.coun
 router.get('/statistic/countByCategory', auth, authAdmin, statisticController.countRealEstateByCategory)
 router.get('/statistic/countByUser', auth, authAdmin, statisticController.countRealEstateByUser)
 router.get('/statistic/countByCreateTime', auth, authAdmin, statisticController.countRealEstateByCreateTime)
+router.get('/statistic/countAreaByCategory', auth, authAdmin, statisticController.countAreaByCategory)
 export default router;

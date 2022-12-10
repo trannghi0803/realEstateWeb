@@ -83,7 +83,7 @@ const categoryController = {
       const realEstate = await realEstateModel.findOne({ category: req.params.id })
       if (realEstate)
         return res.status(400).json({
-          msg: "Can not delete! In this category also exist blogs.",
+          msg: "Can not delete! In this category also exist real estate.",
           statusCode: HttpStatus.VALIDATION
         })
 

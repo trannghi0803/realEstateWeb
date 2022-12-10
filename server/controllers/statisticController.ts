@@ -13,12 +13,12 @@ const Pagination = (req: IReqAuth) => {
 const statisticController = {
   countRealEstateByRegion: async (req: any, res: any) => {
     try {
-      let start = new Date(1669848510 * 1000);
-      let end = new Date(1672440510 * 1000);
-      let query = {
-        createdAt: { $gte: start, $lte: end }
-        // category: new RegExp(req.query.category), $options: "i"
-      }
+      let start = new Date(Number(req.query.starttime) * 1000);
+      let end = new Date(Number(req.query.endTime) * 1000);
+      // let query = {
+      //   createdAt: { $gte: start, $lte: end }
+      //   // category: new RegExp(req.query.category), $options: "i"
+      // }
       // console.log("query", query)
       // const data = await realEstateModel.find(query).sort("-createdAt")
       const data = await realEstateModel.aggregate([
@@ -43,14 +43,8 @@ const statisticController = {
   },
   countRealEstateByCategory: async (req: any, res: any) => {
     try {
-      let start = new Date(1669848510 * 1000);
-      let end = new Date(1672440510 * 1000);
-      // let query = {
-      //   createdAt: { $gte: start, $lte: end }
-      //   // category: new RegExp(req.query.category), $options: "i"
-      // }
-      // console.log("query", query)
-      // const data = await realEstateModel.find(query).sort("-createdAt")
+      let start = new Date(Number(req.query.starttime) * 1000);
+      let end = new Date(Number(req.query.endTime) * 1000);
       const data = await realEstateModel.aggregate([
         { $match: { createdAt: { $gte: start, $lte: end } } },
         {
@@ -84,10 +78,47 @@ const statisticController = {
       return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
     }
   },
+  countAreaByCategory: async (req: any, res: any) => {
+    try {
+      let start = new Date(Number(req.query.starttime) * 1000);
+      let end = new Date(Number(req.query.endTime) * 1000);
+      const data = await realEstateModel.aggregate([
+        { $match: { createdAt: { $gte: start, $lte: end } } },
+        {
+          $lookup: {
+            "from": "categories",
+            "localField": "category",
+            "foreignField": "_id",
+            "as": "category"
+          }
+        },
+        // array -> object
+        { $unwind: "$category" },
+        {
+          $group: {
+            _id: "$category._id",
+            name: { $first: "$category.name" },
+            count: { $sum: "$area" }
+          }
+        },
+        { $sort: { count: 1 } },
+      ]).exec((err, result) => {
+        if (err) {
+          console.log(err)
+        } else {
+          // console.log(result)
+          res.status(200).json(result);
+        }
+      });
+      // res.json(data);
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
+    }
+  },
   countRealEstateByUser: async (req: any, res: any) => {
     try {
-      let start = new Date(1669848510 * 1000);
-      let end = new Date(1672440510 * 1000);
+      let start = new Date(Number(req.query.starttime) * 1000);
+      let end = new Date(Number(req.query.endTime) * 1000);
       const data = await realEstateModel.aggregate([
         { $match: { createdAt: { $gte: start, $lte: end } } },
         {
@@ -123,8 +154,8 @@ const statisticController = {
   },
   countRealEstateByCreateTime: async (req: any, res: any) => {
     try {
-      let start = new Date(1667256510 * 1000);
-      let end = new Date(1669762110 * 1000);
+      let start = new Date(Number(req.query.starttime) * 1000);
+      let end = new Date(Number(req.query.endTime) * 1000);
       const data = await realEstateModel.aggregate([
         // { $match: { createdAt: { $gte: start, $lte: end } } },
         {
