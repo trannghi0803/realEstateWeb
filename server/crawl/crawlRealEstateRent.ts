@@ -5,10 +5,7 @@ import realEstateModel from "../models/realEstate"
 
 const puppeteer = require("puppeteer");
 
-const crawlRealEstate = {
-
-    //Gét url của trang batdongsan.com
-    //let originalUrl = "https://batdongsan.com.vn/nha-dat-ban";
+const crawlRealEstateRent = {
 
     getLink: async (originalUrl: string) => {
         const browser = await puppeteer.launch({
@@ -61,13 +58,13 @@ const crawlRealEstate = {
 
                     //save category to DB
                     let categoryResult: any;
-                    const category = await categoryModel.findOne({ name: item.category, type: CategoryType.Sell });
+                    const category = await categoryModel.findOne({ name: item.category, type: CategoryType.Rent});
                     if (category) {
                         categoryResult = category;
                     } else {
                         let categoryData = {
                             name: item.category || "",
-                            type: CategoryType.Sell,
+                            type: CategoryType.Rent,
                             description: item.category,
                         }
 
@@ -86,7 +83,7 @@ const crawlRealEstate = {
                         attributes: item.attributes,
                         images: item.images,
                         category: categoryResult._id,
-                        categoryType: CategoryType.Sell,
+                        categoryType: CategoryType.Rent,
                         address: {
                             provinceName: item.provinceName,
                             districtName: item.districtName,
@@ -214,4 +211,4 @@ const pageDetail = async (Url: string) => {
     await browser.close(); // lấy xong đóng tab
     return data;
 };
-export default crawlRealEstate
+export default crawlRealEstateRent

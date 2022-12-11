@@ -22,7 +22,11 @@ const statisticController = {
       // console.log("query", query)
       // const data = await realEstateModel.find(query).sort("-createdAt")
       const data = await realEstateModel.aggregate([
-        { $match: { createdAt: { $gte: start, $lte: end } } },
+        {
+          $match: {
+            createdAt: { $gte: start, $lte: end }
+          }
+        },
         {
           $group: { _id: "$address.provinceName", count: { $sum: 1 } }
         },
@@ -46,7 +50,12 @@ const statisticController = {
       let start = new Date(Number(req.query.starttime) * 1000);
       let end = new Date(Number(req.query.endTime) * 1000);
       const data = await realEstateModel.aggregate([
-        { $match: { createdAt: { $gte: start, $lte: end } } },
+        {
+          $match: {
+            createdAt: { $gte: start, $lte: end },
+            // categoryType: Number(req.query.categoryType)
+          }
+        },
         {
           $lookup: {
             "from": "categories",
@@ -159,8 +168,10 @@ const statisticController = {
       const data = await realEstateModel.aggregate([
         // { $match: { createdAt: { $gte: start, $lte: end } } },
         {
-          $group: { _id: { $month: "$createdAt" }, 
-          count: { $sum: 1 } }
+          $group: {
+            _id: { $month: "$createdAt" },
+            count: { $sum: 1 }
+          }
         },
         { $sort: { count: 1 } },
       ]).exec((err, result) => {

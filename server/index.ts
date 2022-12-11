@@ -8,10 +8,11 @@ import morgan from 'morgan';
 import routes from './routes/index';
 import crawlRealEstate from './crawl/crawlRealEstate';
 import crawlNews from './crawl/crawlNews';
-import { NEWS_URL, REAL_ESTATE_URL } from './utils/constants';
+import { NEWS_URL, REAL_ESTATE_RENT_URL, REAL_ESTATE_URL } from './utils/constants';
 import timeExpressionModel from './models/timeExpressionModel';
 import clawlerController from './controllers/clawlerController';
 import { TimeExpressionType } from './utils/enums';
+import crawlRealEstateRent from './crawl/crawlRealEstateRent';
 const fileUpload = require("express-fileupload");
 
 //Middleware
@@ -75,6 +76,21 @@ const crawlRealEstateSell = async () => {
     console.log("err", err)
   }
 }
+
+const crawlRealEstateRents = async () => {
+  try {
+    let data: any
+    let Url = crawlRealEstateRent.getLink(REAL_ESTATE_RENT_URL);
+    Url.then((uri) => {
+      data = crawlRealEstateRent.saveDataToDB(uri)
+    })
+    return data
+    // await crawlRealEstate();
+  } catch (err: any) {
+    console.log("err", err)
+  }
+}
+
 const crawlNewsData = async () => {
   try {
     let data: any;
@@ -130,6 +146,12 @@ const jobCrawlRealEstateSell = nodeCron.schedule('30 9 * * *', crawlRealEstateSe
   timezone: "Asia/Ho_Chi_Minh"
 });
 jobCrawlRealEstateSell.start();
+
+const jobCrawlRealEstateRent = nodeCron.schedule('35 6 * * *', crawlRealEstateRents, {
+  scheduled: false,
+  timezone: "Asia/Ho_Chi_Minh"
+});
+jobCrawlRealEstateRent.start();
 
 const jobCrawlNewsData = nodeCron.schedule('38 9 * * *', crawlNewsData, {
   scheduled: false,

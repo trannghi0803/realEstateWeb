@@ -24,12 +24,14 @@ const categoryController = {
   getPaged: async (req: any, res: any, next: any) => {
     try {
       const { page, pageSize, skip } = Pagination(req)
-
+      let type = req.query.type ? Number(req.query.type) : undefined;
       let query = {
         name: {
           $regex: new RegExp(req.query.name), $options: "i"
         },
+        type
       }
+      type === undefined && delete query["type"]
       const countResult = await categoryModel.find(query).count()
       const data = await categoryModel.find(query).sort("-createdAt")
         .skip((pageSize * page) - pageSize)
