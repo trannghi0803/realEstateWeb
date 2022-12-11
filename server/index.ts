@@ -147,7 +147,7 @@ const jobCrawlRealEstateSell = nodeCron.schedule('30 9 * * *', crawlRealEstateSe
 });
 jobCrawlRealEstateSell.start();
 
-const jobCrawlRealEstateRent = nodeCron.schedule('35 6 * * *', crawlRealEstateRents, {
+const jobCrawlRealEstateRent = nodeCron.schedule('25 23 * * *', crawlRealEstateRents, {
   scheduled: false,
   timezone: "Asia/Ho_Chi_Minh"
 });

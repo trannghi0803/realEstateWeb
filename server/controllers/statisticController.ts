@@ -1,4 +1,4 @@
-import { HttpStatus, NewsType } from "../utils/enums";
+import { CategoryType, HttpStatus, NewsType } from "../utils/enums";
 import realEstateModel from "../models/realEstate"
 import { IReqAuth } from "../config/interface";
 const mongoose = require('mongoose');
@@ -45,7 +45,7 @@ const statisticController = {
       return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
     }
   },
-  countRealEstateByCategory: async (req: any, res: any) => {
+  countRealEstateSellByCategory: async (req: any, res: any) => {
     try {
       let start = new Date(Number(req.query.starttime) * 1000);
       let end = new Date(Number(req.query.endTime) * 1000);
@@ -53,7 +53,49 @@ const statisticController = {
         {
           $match: {
             createdAt: { $gte: start, $lte: end },
-            // categoryType: Number(req.query.categoryType)
+            categoryType: CategoryType.Sell
+          }
+        },
+        {
+          $lookup: {
+            "from": "categories",
+            "localField": "category",
+            "foreignField": "_id",
+            "as": "category"
+          }
+        },
+        // array -> object
+        { $unwind: "$category" },
+        {
+          $group: {
+            _id: "$category._id",
+            name: { $first: "$category.name" },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { count: 1 } },
+      ]).exec((err, result) => {
+        if (err) {
+          console.log(err)
+        } else {
+          // console.log(result)
+          res.status(200).json(result);
+        }
+      });
+      // res.json(data);
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
+    }
+  },
+  countRealEstateRentByCategory: async (req: any, res: any) => {
+    try {
+      let start = new Date(Number(req.query.starttime) * 1000);
+      let end = new Date(Number(req.query.endTime) * 1000);
+      const data = await realEstateModel.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: start, $lte: end },
+            categoryType: CategoryType.Rent
           }
         },
         {
@@ -92,7 +134,50 @@ const statisticController = {
       let start = new Date(Number(req.query.starttime) * 1000);
       let end = new Date(Number(req.query.endTime) * 1000);
       const data = await realEstateModel.aggregate([
-        { $match: { createdAt: { $gte: start, $lte: end } } },
+        { $match: { createdAt: { $gte: start, $lte: end }, categoryType: CategoryType.Sell } },
+        {
+          $lookup: {
+            "from": "categories",
+            "localField": "category",
+            "foreignField": "_id",
+            "as": "category"
+          }
+        },
+        // array -> object
+        { $unwind: "$category" },
+        {
+          $group: {
+            _id: "$category._id",
+            name: { $first: "$category.name" },
+            count: { $sum: "$area" }
+          }
+        },
+        { $sort: { count: 1 } },
+      ]).exec((err, result) => {
+        if (err) {
+          console.log(err)
+        } else {
+          // console.log(result)
+          res.status(200).json(result);
+        }
+      });
+      // res.json(data);
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
+    }
+  },
+  countAreaByRentCategory: async (req: any, res: any) => {
+    try {
+      let start = new Date(Number(req.query.starttime) * 1000);
+      let end = new Date(Number(req.query.endTime) * 1000);
+      const data = await realEstateModel.aggregate([
+        {
+          $match:
+          {
+            createdAt: { $gte: start, $lte: end },
+            categoryType: CategoryType.Rent
+          }
+        },
         {
           $lookup: {
             "from": "categories",

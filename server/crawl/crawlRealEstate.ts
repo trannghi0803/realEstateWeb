@@ -130,12 +130,12 @@ const pageDetail = async (Url: string) => {
         }
 
         //Get image
-        let image: any = document.querySelectorAll(".re__media-thumb-item")
+        let image: any = document.querySelectorAll(".js__media-item-container")
         if (image) {
-            //let imgList = document.querySelectorAll(".re__media-thumb-item");
+            //let imgList = document.querySelectorAll(".js__media-item-container");
             image.forEach((img: any) => {
                 try {
-                    const image = img.querySelector("img")?.src;
+                    const image = img.querySelector(".re__overlay img").getAttribute("data-src");
                     image && detail.push(image);
                 } catch (err) {
                     console.log(err);

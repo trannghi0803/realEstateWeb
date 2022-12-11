@@ -27,4 +27,5 @@ router
     .put(auth, authAdmin, realEstateController.updateRealEstate);
 router.route("/userSubmitRealEstate/").post(auth, realEstateController.userSubmitRealEstate)
 router.route("/userUpdateRealEstate/:id").put(auth, realEstateController.userUpdateRealEstate)
+router.route("/deleteMulti").delete(auth, realEstateController.deleteRealEstate)
 export default router;

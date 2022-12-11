@@ -127,13 +127,13 @@ const pageDetail = async (Url: string) => {
         }
 
         //Get image
-        let image: any = document.querySelectorAll(".re__media-thumb-item")
+        let image: any = document.querySelectorAll(".js__media-item-container")
         if (image) {
-            //let imgList = document.querySelectorAll(".re__media-thumb-item");
+            //let imgList = document.querySelectorAll(".js__media-item-container");
             image.forEach((img: any) => {
                 try {
-                    const image = img.querySelector("img")?.src;
-                    image && detail.push(image);
+                    const images = img.querySelector(".re__overlay img").getAttribute("data-src");
+                    images && detail.push(images);
                 } catch (err) {
                     console.log(err);
                 }
@@ -160,10 +160,10 @@ const pageDetail = async (Url: string) => {
             let priceNumber = result[result.length - 2]
             let priceRefix = result[result.length - 1]
             switch (priceRefix) {
-                case 'tỷ':
+                case 'tỷ/tháng':
                     priceResult = Number(priceNumber || 0) * 1000000000
                     break;
-                case 'triệu':
+                case 'triệu/tháng':
                     priceResult = Number(priceNumber || 0) * 1000000
                     break;
                 default: priceResult = 0
@@ -205,7 +205,7 @@ const pageDetail = async (Url: string) => {
         return dataJson;
         // } catch (err) {}
     });
-    // console.log("data", data);
+    console.log("dataImage", data.images);
 
     // save(data);
     await browser.close(); // lấy xong đóng tab

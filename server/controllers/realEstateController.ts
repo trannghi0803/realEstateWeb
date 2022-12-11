@@ -335,6 +335,8 @@ const realEstateController = {
   deleteRealEstate: async (req: IReqAuth, res: any) => {
     try {
       await realEstateModel.findByIdAndDelete(req.params.id);
+      //temp dalete multiple
+      // await realEstateModel.deleteMany({categoryType: 1});
       res.json({ msg: "Xóa thành công loại tin đăng", statusCode: HttpStatus.SUCCESS });
     } catch (err: any) {
       return res.status(500).json({ msg: err.message, statusCode: HttpStatus.INTERNAL_ERROR });
