@@ -47,7 +47,7 @@ const authCtrl = {
       // await newUser.save();
       // res.json({ msg: 'Tài khoản đã được kích hoạt' })
       if (validateEmail(email)) {
-        sendMail(email, url, "Verify your email address")
+        sendMail(email, url, "Vui lòng nhấn vào đây để xác thực tài khoản của bạn!")
         return res.json({
           msg: "Success! Please check your email.",
           statusCode: HttpStatus.SUCCESS,
@@ -96,7 +96,7 @@ const authCtrl = {
 
       if (!user) return res.status(HttpStatus.VALIDATION).json({
         statusCode: HttpStatus.VALIDATION,
-        msg: "User does not exist"
+        msg: "Tài khoản không tồn tại"
       });
 
       loginUser(user, password, res);

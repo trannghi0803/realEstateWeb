@@ -13,7 +13,7 @@ const Pagination = (req: IReqAuth) => {
 const statisticController = {
   countRealEstateByRegion: async (req: any, res: any) => {
     try {
-      let start = new Date(Number(req.query.starttime) * 1000);
+      let start = new Date(Number(req.query.startTime) * 1000);
       let end = new Date(Number(req.query.endTime) * 1000);
       // let query = {
       //   createdAt: { $gte: start, $lte: end }
@@ -47,13 +47,15 @@ const statisticController = {
   },
   countRealEstateSellByCategory: async (req: any, res: any) => {
     try {
-      let start = new Date(Number(req.query.starttime) * 1000);
+      let start = new Date(Number(req.query.startTime) * 1000);
       let end = new Date(Number(req.query.endTime) * 1000);
+      console.log("start-->", start, "end-->",end);
       const data = await realEstateModel.aggregate([
         {
           $match: {
             createdAt: { $gte: start, $lte: end },
-            categoryType: CategoryType.Sell
+            categoryType: CategoryType.Sell,
+            "address.provinceName": { $regex: new RegExp(req.query.provinceName), $options: "i" }, 
           }
         },
         {
@@ -89,13 +91,14 @@ const statisticController = {
   },
   countRealEstateRentByCategory: async (req: any, res: any) => {
     try {
-      let start = new Date(Number(req.query.starttime) * 1000);
+      let start = new Date(Number(req.query.startTime) * 1000);
       let end = new Date(Number(req.query.endTime) * 1000);
       const data = await realEstateModel.aggregate([
         {
           $match: {
             createdAt: { $gte: start, $lte: end },
-            categoryType: CategoryType.Rent
+            categoryType: CategoryType.Rent,
+            "address.provinceName": { $regex: new RegExp(req.query.provinceName), $options: "i" }, 
           }
         },
         {
@@ -131,10 +134,16 @@ const statisticController = {
   },
   countAreaByCategory: async (req: any, res: any) => {
     try {
-      let start = new Date(Number(req.query.starttime) * 1000);
+      let start = new Date(Number(req.query.startTime) * 1000);
       let end = new Date(Number(req.query.endTime) * 1000);
       const data = await realEstateModel.aggregate([
-        { $match: { createdAt: { $gte: start, $lte: end }, categoryType: CategoryType.Sell } },
+        {
+          $match: {
+            createdAt: { $gte: start, $lte: end },
+            categoryType: CategoryType.Sell,
+            "address.provinceName": { $regex: new RegExp(req.query.provinceName), $options: "i" }, 
+          }
+        },
         {
           $lookup: {
             "from": "categories",
@@ -168,14 +177,15 @@ const statisticController = {
   },
   countAreaByRentCategory: async (req: any, res: any) => {
     try {
-      let start = new Date(Number(req.query.starttime) * 1000);
+      let start = new Date(Number(req.query.startTime) * 1000);
       let end = new Date(Number(req.query.endTime) * 1000);
       const data = await realEstateModel.aggregate([
         {
           $match:
           {
             createdAt: { $gte: start, $lte: end },
-            categoryType: CategoryType.Rent
+            categoryType: CategoryType.Rent,
+            "address.provinceName": { $regex: new RegExp(req.query.provinceName), $options: "i" }, 
           }
         },
         {
@@ -211,7 +221,7 @@ const statisticController = {
   },
   countRealEstateByUser: async (req: any, res: any) => {
     try {
-      let start = new Date(Number(req.query.starttime) * 1000);
+      let start = new Date(Number(req.query.startTime) * 1000);
       let end = new Date(Number(req.query.endTime) * 1000);
       const data = await realEstateModel.aggregate([
         { $match: { createdAt: { $gte: start, $lte: end } } },
@@ -248,7 +258,7 @@ const statisticController = {
   },
   countRealEstateByCreateTime: async (req: any, res: any) => {
     try {
-      let start = new Date(Number(req.query.starttime) * 1000);
+      let start = new Date(Number(req.query.startTime) * 1000);
       let end = new Date(Number(req.query.endTime) * 1000);
       const data = await realEstateModel.aggregate([
         // { $match: { createdAt: { $gte: start, $lte: end } } },

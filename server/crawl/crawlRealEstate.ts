@@ -12,9 +12,6 @@ const crawlRealEstate = {
 
     getLink: async (originalUrl: string) => {
         const browser = await puppeteer.launch({
-            // userAgent: randomUA.generate(),
-            // stealth: true,
-            // useChrome: true,
             headless: false,
             ignoreHTTPSErrors: true,
         });
@@ -27,7 +24,6 @@ const crawlRealEstate = {
             console.log("product_wrapper", product_wrapper);
 
             product_wrapper.forEach((product: any) => {
-                // let dataJson = {};
                 try {
                     const uri: any = product.querySelector(".js__product-link-for-product-id")?.href;
                     products.push(uri);
@@ -38,7 +34,6 @@ const crawlRealEstate = {
 
             return products;
         });
-        // console.log("data", data);
 
         await browser.close();
         return data;

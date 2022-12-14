@@ -141,19 +141,19 @@ const crawlNewsData = async () => {
 //   timezone: "Asia/Ho_Chi_Minh"
 // });
 
-const jobCrawlRealEstateSell = nodeCron.schedule('30 9 * * *', crawlRealEstateSell, {
+const jobCrawlRealEstateSell = nodeCron.schedule('55 23 * * *', crawlRealEstateSell, {
   scheduled: false,
   timezone: "Asia/Ho_Chi_Minh"
 });
 jobCrawlRealEstateSell.start();
 
-const jobCrawlRealEstateRent = nodeCron.schedule('25 23 * * *', crawlRealEstateRents, {
+const jobCrawlRealEstateRent = nodeCron.schedule('5 00 * * *', crawlRealEstateRents, {
   scheduled: false,
   timezone: "Asia/Ho_Chi_Minh"
 });
 jobCrawlRealEstateRent.start();
 
-const jobCrawlNewsData = nodeCron.schedule('38 9 * * *', crawlNewsData, {
+const jobCrawlNewsData = nodeCron.schedule('15 00 * * *', crawlNewsData, {
   scheduled: false,
   timezone: "Asia/Ho_Chi_Minh"
 });
